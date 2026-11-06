@@ -161,13 +161,21 @@ func (h *host) dock(s settings.Settings, shown bool) { h.dockFront(s, shown, sho
 // magpie: not for the window a restart by itself brings back.
 func (h *host) dockFront(s settings.Settings, shown, front bool) {
 	full := application.InvokeSyncWithResult(func() bool { return h.main != nil && h.main.IsFullscreen() })
-	setDock(inDock(s, shown, full), front)
+	setDock(inDockFor(s, shown, full, stageManagerOn()), front)
 }
 
 // inDock: always, never, or while the window is shown (the default), as s
 // says, and while it is full screen whatever s says (dockOnFullscreen).
 func inDock(s settings.Settings, shown, fullscreen bool) bool {
 	return s.Dock || !s.DockNever && shown || fullscreen
+}
+
+// inDockFor is inDock, and a shown window joins the Dock while Stage
+// Manager is on even with Hide chosen: Stage Manager lays out a regular
+// app's windows, while an accessory app's window stays outside its stage.
+// Closing the window leaves the Dock as the setting says.
+func inDockFor(s settings.Settings, shown, fullscreen, stageManager bool) bool {
+	return inDock(s, shown, fullscreen) || shown && stageManager
 }
 
 func (h *host) Quit() { h.app.Quit() }

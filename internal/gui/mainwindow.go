@@ -25,7 +25,13 @@ func mainMacWindow() application.MacWindow {
 		// macOS 26 and later its toolbar is taken off once it has placed
 		// the traffic lights (plainTitlebar)
 		TitleBar: application.MacTitleBarHiddenInset,
-		CollectionBehavior: application.MacWindowCollectionBehaviorMoveToActiveSpace |
+		// Managed is what Stage Manager arranges: AppKit sets it by
+		// default, but Wails writes CollectionBehavior as the whole
+		// bitmask, so naming the other two alone took it away and left
+		// the main window outside a stage (not scaled into the left side
+		// when its app came forward).
+		CollectionBehavior: application.MacWindowCollectionBehaviorManaged |
+			application.MacWindowCollectionBehaviorMoveToActiveSpace |
 			application.MacWindowCollectionBehaviorFullScreenPrimary,
 	}
 }

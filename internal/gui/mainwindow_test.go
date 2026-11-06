@@ -20,6 +20,10 @@ import (
 func TestMainWindowFollowsActiveSpace(t *testing.T) {
 	m := mainMacWindow()
 	b := m.CollectionBehavior
+	if b&application.MacWindowCollectionBehaviorManaged == 0 {
+		t.Errorf("main window collection behaviour %d is not managed, so Stage Manager leaves it out", b)
+	}
+
 	if b&application.MacWindowCollectionBehaviorMoveToActiveSpace == 0 {
 		t.Errorf("main window collection behaviour %d does not move to the active Space", b)
 	}
@@ -76,6 +80,28 @@ func TestFullscreenKeepsDock(t *testing.T) {
 	for _, c := range cases {
 		if got := inDock(c.s, c.shown, c.fullscreen); got != c.want {
 			t.Errorf("inDock(%+v, shown=%v, fullscreen=%v) = %v, want %v", c.s, c.shown, c.fullscreen, got, c.want)
+		}
+	}
+}
+
+// Stage Manager lays out a regular app's windows; with Hide chosen an
+// accessory app's window stayed outside its stage, so a shown window joins
+// the Dock while Stage Manager is on, and only while it is shown.
+func TestStageManagerKeepsAShownWindowInTheDock(t *testing.T) {
+	hidden := settings.Settings{DockNever: true}
+	cases := []struct {
+		s            settings.Settings
+		shown, stage bool
+		want         bool
+	}{
+		{hidden, true, true, true},
+		{hidden, true, false, false},
+		{hidden, false, true, false},
+		{settings.Settings{Dock: true}, false, false, true},
+	}
+	for _, c := range cases {
+		if got := inDockFor(c.s, c.shown, false, c.stage); got != c.want {
+			t.Errorf("inDockFor(%+v, shown=%v, stage=%v) = %v, want %v", c.s, c.shown, c.stage, got, c.want)
 		}
 	}
 }

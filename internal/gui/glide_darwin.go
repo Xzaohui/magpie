@@ -8,6 +8,16 @@ package gui
 #import <Cocoa/Cocoa.h>
 #import <QuartzCore/QuartzCore.h>
 #import <WebKit/WebKit.h>
+// Stage Manager lays out a regular app's windows; an accessory app's window
+// stays outside its stage, whoever manages that window. The WindowManager's
+// own preference says whether it is on.
+static int stageManagerOn(void) {
+	CFPropertyListRef v = CFPreferencesCopyValue(CFSTR("GloballyEnabled"), CFSTR("com.apple.WindowManager"),
+		kCFPreferencesCurrentUser, kCFPreferencesAnyHost);
+	int on = v != NULL && CFGetTypeID(v) == CFBooleanGetTypeID() && CFBooleanGetValue((CFBooleanRef)v);
+	if (v != NULL) CFRelease(v);
+	return on;
+}
 
 // The text size is the webview's page zoom, Safari's Cmd-+: the page is laid
 // out again in larger CSS pixels. Wails' own zoom on the Mac is the
@@ -174,6 +184,10 @@ func (h *host) TintPanel(c [4]uint8, ms int) bool {
 	}
 	return C.tintPanel(w, C.int(c[0]), C.int(c[1]), C.int(c[2]), C.int(c[3]), C.int(ms)) == 1
 }
+
+// stageManagerOn says whether Stage Manager is on, as its own preference
+// tells it.
+func stageManagerOn() bool { return C.stageManagerOn() != 0 }
 
 func dockPolicy(on bool) application.ActivationPolicy {
 	if on {
