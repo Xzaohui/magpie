@@ -17485,7 +17485,10 @@ function renderPanelQuota(lazy) {
       head.append(m);
     }
     g.append(head);
-    const all = qs.length > 1 && quotaAllOf(qs, "pq-all", 3);
+    // every window the accounts share, not the first three: a group's
+    // weekly and a model's own pool (Gemini 4 Argon) were left below the
+    // fold while the panel has room to wrap
+    const all = qs.length > 1 && quotaAllOf(qs, "pq-all");
     if (all) g.append(all);
     // the accounts in full; none of them, the one in sight; folded, none
     const shut = all && quotaAllFolded(qs[0].provider);
